@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Тренажёр иероглифов</title>
+  <script src="https://unpkg.com/hanzi-writer/dist/hanzi-writer.min.js"></script>
+  <style>
+    body { font-family: sans-serif; text-align: center; margin: 20px; }
+    #step1, #step2, #step3 {
+      width: 200px; 
+      height: 200px; 
+      margin: 20px auto;
+    }
+    button { margin-top: 10px; padding: 10px 20px; font-size: 16px; }
+  </style>
+</head>
+<body>
+  <h1>Тренажёр иероглифов</h1>
+
+  <div id="step1"></div>
+  <div id="step2" style="display:none;"></div>
+  <div id="step3" style="display:none;"></div>
+
+  <p id="info"></p>
+  <button onclick="nextStep()">Дальше</button>
+
+  <script>
+    // Список слов/иероглифов
+    const words = [
+      "着","手","拿","班","长","笑","宾馆","一直","往","路口","有意思",
+      "但是","虽然","次","玩儿","晴","百","日","新年","票","火车站","大家","更","阴"
+    ];
+
+    // Разбиваем все слова на отдельные символы
+    let characters = [];
+    words.forEach(word => {
+      for (let char of word) characters.push(char);
+    });
+
+    let charIndex = 0;
+    let step = 1;
+
+    let writer1 = null;
+    let writer2 = null;
+    let writer3 = null;
+
+    function initWriters() {
+      const hanzi = characters[charIndex];
+
+      // очищаем контейнеры и отменяем старые quiz
+      document.getElementById('step1').innerHTML = '';
+      document.getElementById('step2').innerHTML = '';
+      document.getElementById('step3').innerHTML = '';
+      if (writer1) writer1.cancelQuiz(); 
+      if (writer2) writer2.cancelQuiz(); 
+      if (writer3) writer3.cancelQuiz(); 
+
+      writer1 = HanziWriter.create('step1', hanzi, {
+        width: 200,
+        height: 200,
+        padding: 5,
+        showOutline: true,
+        outlineColor: '#ccc',
+        strokeColor: '#1E90FF'
+      });
+
+      writer2 = HanziWriter.create('step2', hanzi, {
+        width: 200,
+        height: 200,
+        padding: 5,
+        showOutline: true,
+        outlineColor: '#ccc',
+        strokeColor: '#1E90FF'
+      });
+
+      writer3 = HanziWriter.create('step3', hanzi, {
+        width: 200,
+        height: 200,
+        padding: 5,
+        showCharacter: false,
+        showOutline: false,
+        showHintAfterMisses: 1,
+        highlightOnComplete: false,
+        strokeColor: '#1E90FF'
+      });
+    }
+
+    function nextStep() {
+      // скрываем все блоки
+      document.getElementById("step1").style.display = "none";
+      document.getElementById("step2").style.display = "none";
+      document.getElementById("step3").style.display = "none";
+      document.getElementById("info").innerText = "";
+
+      if (step === 1) initWriters();
+
+      if (step === 1) {
+        document.getElementById("step1").style.display = "block";
+        writer1.animateCharacter();
+        document.getElementById("info").innerText = `Шаг 1: смотри порядок черт — ${characters[charIndex]}`;
+      } else if (step === 2) {
+        document.getElementById("step2").style.display = "block";
+        writer2.quiz();
+        document.getElementById("info").innerText = `Шаг 2: напиши поверх серого — ${characters[charIndex]}`;
+      } else if (step === 3) {
+        document.getElementById("step3").style.display = "block";
+        writer3.quiz();
+        document.getElementById("info").innerText = `Шаг 3: напиши без подсказок — ${characters[charIndex]}`;
+      }
+
+      step++;
+
+      // переход к следующему иероглифу
+      if (step > 3) {
+        step = 1;
+        charIndex++;
+        if (charIndex >= characters.length) charIndex = 0; // зацикливание
+      }
+    }
+
+    // старт
+    window.onload = () => nextStep();
+  </script>
+</body>
+</html>
